@@ -55,16 +55,13 @@
       <div class="row">
         <div class="col-lg-12">
           <div class="list-group">
-            <a href="#" class="list-group-item active">
-              <h4 class="list-group-item-heading">Admin</h4>
+            {% for i in users %}
+            <a href="{{url_for('promote',user_id = i['id'])}}" class="list-group-item {% if i['expert'] == 1 %} active {% endif %}">
+              <h4 class="list-group-item-heading">{{i['name']}}</h4>
             </a>
-            <a href="#" class="list-group-item">
-              <h4 class="list-group-item-heading">Herbert</h4>
-            </a>
-            <a href="#" class="list-group-item active">
-              <h4 class="list-group-item-heading">Anthony</h4>
-            </a>
+            {% endfor %}
           </div>
+
         </div><!-- /.col-lg-12 -->
       </div>
 
