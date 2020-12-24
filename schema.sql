@@ -9,7 +9,7 @@ create table users(
 create table questions(
     id integer primary key autoincrement,
     question_text text not null,
-    answer_text text not null,
+    answer_text text,
     asked_by integer not null,
     expert_id integer not null
 );

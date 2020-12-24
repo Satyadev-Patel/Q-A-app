@@ -18,7 +18,7 @@ def get_current_user():
         user = session['user']
 
         db = get_db()
-        cur = db.execute("select name,password,expert,admin from users where name = ?",[user])
+        cur = db.execute("select id,name,password,expert,admin from users where name = ?",[user])
         user_result = cur.fetchone()
 
     return user_result
@@ -78,10 +78,21 @@ def answer():
     return render_template('answer.html',user = user)
 
 
-@app.route('/ask')
+@app.route('/ask',methods = ['POST','GET'])
 def ask():
     user = get_current_user()
-    return render_template('ask.html',user = user)
+    db = get_db()
+    if request.method == 'POST':
+        question = request.form['question']
+        expert_id = request.form['expert']
+        db.execute("insert into questions (question_text,asked_by,expert_id) values (?,?,?)",[question,user['id'],expert_id])
+        db.commit() 
+        return "{} {}".format(request.form['question'],request.form['expert'])
+
+    cur = db.execute("select id,name from users where expert = ?",[1])
+    experts = cur.fetchall()
+    
+    return render_template('ask.html',user = user,experts = experts)
 
 
 @app.route('/unanswered')
