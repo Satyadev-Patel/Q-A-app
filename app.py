@@ -43,6 +43,13 @@ def register():
         name = request.form['name']
         password = request.form['password']
         db = get_db()
+
+        existing_user_cur = db.execute('select id from users where name = ?',[name])
+        existing_user = existing_user_cur.fetchone()
+
+        if existing_user:
+            return render_template('register.html',user = user,error = 'User Already Exists!')
+
         hashed_pass = generate_password_hash(password,method='sha256')
         db.execute("insert into users (name, password, expert, admin) values (?,?,?,?)",[name,hashed_pass,'0','0'])
         db.commit()
