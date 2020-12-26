@@ -87,7 +87,7 @@ def ask():
         expert_id = request.form['expert']
         db.execute("insert into questions (question_text,asked_by,expert_id) values (?,?,?)",[question,user['id'],expert_id])
         db.commit() 
-        return "{} {}".format(request.form['question'],request.form['expert'])
+        return redirect(url_for('index'))
 
     cur = db.execute("select id,name from users where expert = ?",[1])
     experts = cur.fetchall()
@@ -98,7 +98,11 @@ def ask():
 @app.route('/unanswered')
 def unanswered():
     user = get_current_user()
-    return render_template('unanswered.html',user = user)
+    db = get_db()
+    ques_cur = db.execute('select questions.id, questions.question_text, users.name from questions \
+        join users on users.id = questions.asked_by where questions.answer_text is null and questions.expert_id = ?',[user['id']])
+    ques = ques_cur.fetchall()
+    return render_template('unanswered.html',user = user, questions = ques)
 
 
 @app.route('/users')
