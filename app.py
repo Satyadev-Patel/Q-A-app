@@ -64,18 +64,22 @@ def register():
 @app.route('/login',methods = ['GET','POST'])
 def login():
     user = get_current_user()
+    error = None
     if request.method == 'POST':
         name = request.form['name']
         password = request.form['password']
         db = get_db()
         cur = db.execute("select name,password from users where name = ?",[name])
         user_result = cur.fetchone()
-        if check_password_hash(user_result['password'],password):
-            session['user'] = user_result['name']
-            return redirect(url_for('index'))
+        if user_result:
+            if check_password_hash(user_result['password'],password):
+                session['user'] = user_result['name']
+                return redirect(url_for('index'))
+            else:
+                error = "Password Incorrect"
         else:
-            return "False"
-    return render_template('login.html',user = user)
+            error = "Username incorrect"
+    return render_template('login.html',user = user,error = error)
 
 
 @app.route('/question/<id>')
