@@ -81,6 +81,8 @@ def login():
 @app.route('/question/<id>')
 def question(id):
     user = get_current_user()
+
+
     db = get_db()
     cur = db.execute('select questions.question_text,questions.answer_text,askers.name as asker_name,experts.name as expert_name from questions \
         join users as askers on askers.id = questions.asked_by \
@@ -93,6 +95,10 @@ def question(id):
 @app.route('/answer/<ques_id>',methods = ['GET','POST'])
 def answer(ques_id):
     user = get_current_user()
+
+    if user['expert'] == 0:
+        error = "Only experts can access this page!"
+        return render_template('error.html',error = error)
 
     db = get_db()
     if request.method == 'POST':
@@ -107,6 +113,10 @@ def answer(ques_id):
 @app.route('/ask',methods = ['POST','GET'])
 def ask():
     user = get_current_user()
+
+    if not user:
+        return redirect(url_for('login'))
+
     db = get_db()
     if request.method == 'POST':
         question = request.form['question']
@@ -124,6 +134,14 @@ def ask():
 @app.route('/unanswered')
 def unanswered():
     user = get_current_user()
+
+    if not user:
+        return redirect(url_for('login'))
+
+    if user['expert'] == 0:
+        error = "Only experts can access this page!"
+        return render_template('error.html',error = error)
+
     db = get_db()
     ques_cur = db.execute('select questions.id, questions.question_text, users.name from questions \
         join users on users.id = questions.asked_by where questions.answer_text is null and questions.expert_id = ?',[user['id']])
@@ -135,6 +153,13 @@ def unanswered():
 def users():
     user = get_current_user()
 
+    if not user:
+        return redirect(url_for('login'))
+
+    if user['admin'] == 0:
+        error = "Only admin can access this page!"
+        return render_template('error.html',error = error)
+
     db = get_db()
     users_cur = db.execute('select id, name, expert, admin from users')
     user_results = users_cur.fetchall()
@@ -143,6 +168,15 @@ def users():
 
 @app.route('/promote/<user_id>')
 def promote(user_id):
+    user = get_current_user()
+
+    if not user:
+        return redirect(url_for('login'))
+
+    if user['admin'] == 0:
+        error = "Only admin can access this page!"
+        return render_template('error.html',error = error)
+
     db = get_db()
     db.execute('update users set expert = 1 where id = ?',[user_id])
     db.commit()
